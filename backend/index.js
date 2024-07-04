@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 4040;
 
 const jwt=require('jsonwebtoken')
 const User = require('./models/User');
+const Message = require('./models/Message')
 const cors=require('cors');
 const cookieParser=require('cookie-parser');
 const bcrypt=require('bcryptjs');
@@ -41,9 +42,9 @@ app.get('/profile',(req,res)=>{
     if(token){
     jwt.verify(token,jwtsecret,{},(err, userData)=>{
         if(err) throw err;
-        const {id,username}=userData;
+       // const {id,username}=userData;
         res.json({
-            id,username
+            userData
         });
     })
 }else{
@@ -102,6 +103,8 @@ const server=app.listen(PORT, () => console.log(`Server running on port ${PORT}`
 const wss=new ws.WebSocketServer({server})
 
 wss.on("connection",(connection,req)=>{
+
+//read username and id from the cookie for this connection
     const cookies = req.headers.cookie;
     if(cookies){
     const tokenCookieString = cookies.split(';').find(str=>str.startsWith('token='));
@@ -116,8 +119,30 @@ wss.on("connection",(connection,req)=>{
             })
         }
     }
-    }
+}
 
+    connection.on('message' , async (message)=>
+    {
+        
+        const messageData= JSON.parse(message.toString());
+        const {recipient, text}=messageData;
+        if(recipient && text){
+          const messageDoc = await Message.create({
+                sender: connection.userId,
+                recipient,
+                text
+            });
+            [...wss.clients]
+            .filter(c=> c.userId === recipient)
+            .forEach(c=>c.send(JSON.stringify({
+                text,
+                sender:connection.userId,
+                recipient,
+                id:messageDoc._id,
+            })))
+        }
+    });
+    //to notify everyone about online people (when someone connects)
     [...wss.clients].forEach(client=>{
         client.send(JSON.stringify(
            { online : [...wss.clients].map(c=>({userId:c.userId,username:c.username}))}

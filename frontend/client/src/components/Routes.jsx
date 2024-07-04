@@ -1,6 +1,6 @@
 import Register from "./Register";
 import {useContext} from "react";
-import{UserContext} from "./UserContext.jsx"
+import{UserContext, UserContextProvider} from "./UserContext.jsx"
 import Chat from "./Chat.jsx";
 
 export default function Routes(){
@@ -8,6 +8,7 @@ export default function Routes(){
 
     if(username){
         return <Chat/>
+         
     }
     return(
         <Register/>
