@@ -31,11 +31,11 @@ export default function Register(){
                 <button className="bg-blue-500 text-white block w-full rounded-sm p-2">
                     {isLoginOrRegister === 'register' ? 'Register' : 'Login'}
                 </button>
-                <div className='text-center mt-2'>{isLoginOrRegister === 'register' &&(<div>Already a member? 
-                    <button onClick={()=> setIsLoginOrRegister('login')}> Login Here </button></div>
+                <div className='text-center mt-2'>{isLoginOrRegister === 'register' &&(<div>Already a member? {" "}
+                    <button className='font-medium' onClick={()=> setIsLoginOrRegister('login')}> Login Here </button></div>
                 )}
-                {isLoginOrRegister === 'login' && (<div>Don't have an account? 
-                    <button onClick={()=> setIsLoginOrRegister('register')}> Register </button></div>)}
+                {isLoginOrRegister === 'login' && (<div>Don't have an account? {" "}
+                    <button className='font-medium' onClick={()=> setIsLoginOrRegister('register')}> Register </button></div>)}
                 </div>
             </form>
         </div>
