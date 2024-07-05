@@ -1,23 +1,37 @@
-import {useEffect,useState,useContext} from 'react'
-import Avatar from './Avatar';
+import {useEffect,useState,useContext,useRef} from 'react'
+
 import Logo from './Logo';
-import UserContext from './UserContext.jsx';
+import {UserContext} from './UserContext';
 import { uniqBy } from 'lodash';
+import axios from 'axios'
+import Contact from './Contact';
 
 export default function Chat(){
 
     const [ws,setWs]= useState(null);
     const [onlinePeople,setOnlinePeople] = useState({})
     const [selectedUserId,setSelectedUserId]=useState(null);
+    const [offlinePeople,setOfflinePeople]=useState({})
     const [newMessageText,setNewMessageText] = useState('');
     const [messages,setMessages]=useState([]);
     const {username,id} = useContext(UserContext)
+    const divUnderMessages = useRef();
     useEffect(()=>{
+       connectToWs();
+    },[])
+
+    function connectToWs(){
         const ws=new WebSocket('ws://localhost:4040');
         setWs(ws);
 
         ws.addEventListener('message', handleMessage)
-    },[])
+        ws.addEventListener('close',() =>{
+            setTimeout(() => {
+                console.log("Disconnected. Trying to reconnect")
+                connectToWs();
+            },1000)
+        })
+    }
 
     function showOnlinePeople(peopleArray){
         const people ={};
@@ -48,13 +62,52 @@ export default function Chat(){
             text: newMessageText,
         }));
         setNewMessageText('');
-        setMessages(prev => ([...prev,{text : newMessageText, isOur:true}]))
+        setMessages(prev => ([...prev,{
+        text : newMessageText, 
+        sender :id,
+        recipient:selectedUserId,  
+        _id: Date.now(),
+    }]))
+    
     }
 
+
+
+     useEffect(()=>{
+        const div = divUnderMessages.current;
+        if(div){
+             div.scrollIntoView({behaviour: 'smooth', block:'end'})
+        }
+    },[messages]);
+
+
+    useEffect(() => {
+        axios.get('/people').then(res=>{
+            const offlinePeopleArray=res.data.filter(p => p._id !== id).filter(p => !Object.keys(onlinePeople).includes(p._id))
+            const offlinePeople={};
+            offlinePeopleArray.forEach(p=>{
+                offlinePeople[p._id] = p;
+            })
+            setOfflinePeople(offlinePeople);
+        })
+
+    }, [onlinePeople])
+
+
+
+    useEffect(()=>{
+        if(selectedUserId){
+            axios.get('/messages/'+selectedUserId).then(res => {
+                setMessages(res.data)
+            })
+        }
+
+    },[selectedUserId])
+    
     const onlinePeopleExclOurUser= {...onlinePeople};
     delete onlinePeopleExclOurUser[id];
 
-    const messagesWithoutDupes =  uniqBy(messages,'id');
+    const messagesWithoutDupes =  uniqBy(messages,'_id');
 
    
     return (
@@ -64,23 +117,43 @@ export default function Chat(){
             <Logo/>
 
             
-            {Object.keys(onlinePeopleExclOurUser).map(userId=>(<div key={userId} onClick={()=> setSelectedUserId(userId)}className={"border-b border-gray-100  flex items-center gap-2 cursor-pointer " + (userId === selectedUserId ? 'bg-blue-50' : '')}>
-                {userId === selectedUserId && (
-                    <div className='w-1 bg-blue-500 h-12 rounded-r-md'></div>
-                )}
-                <div className='flex gap-2 py-2 pl-4 items-center'>
-                    <Avatar username={onlinePeople[userId]} userId={userId}/>
-                <span className='text-gray-800'>{onlinePeople[userId]}</span>
-                </div>
-            </div>
+            {Object.keys(onlinePeopleExclOurUser).map(userId=>(
+                <Contact 
+                key={userId}
+                id={userId} 
+                online={true}
+                username={onlinePeopleExclOurUser[userId]}
+                onClick={()=>setSelectedUserId(userId)}
+                selected={userId === selectedUserId}/>
+        ))}
+        {Object.keys(offlinePeople).map(userId=>(
+                <Contact 
+                key={userId}
+                id={userId} 
+                online={false}
+                username={offlinePeople[userId].username}
+                onClick={()=>setSelectedUserId(userId)}
+                selected={userId === selectedUserId}/>
         ))}
             </div>
             <div className="flex flex-col bg-blue-50 w-2/3 p-2"><div className="flex-grow">
                 {!selectedUserId && (<div className='flex h-full items-center justify-center '>
                     <div className='text-gray-350'>&larr; Select a person from the sidebar</div></div>)}
-                    {selectedUserId && (<div>
-                        {messagesWithoutDupes.map(message => (<div>{message.text}</div>))}
-                    </div>)}
+                    {selectedUserId && (
+                        
+                        <div className='relative h-full '>
+                        <div className='overflow-y-scroll absolute top-0 left-0 right-0 bottom-2'>
+                        {messagesWithoutDupes.map(message => (
+                          <div key={message.id}className={(message.sender === id ? 'text-right': 'text-left')}>
+                            <div className={'text-left inline-block p-2.5 my-1 rounded-md text-sm '+ (message.sender === id ? 'bg-blue-500 text-white':'bg-white text-gray-700')}>
+                          {message.text}
+                           </div>
+                           </div>
+                        ))}
+                           <div ref={divUnderMessages}></div>
+                    </div>
+                </div>
+                )}
                 </div>
             {selectedUserId && (<form className="flex gap-2" onSubmit={sendMessage}>
                 <input type="text" 
