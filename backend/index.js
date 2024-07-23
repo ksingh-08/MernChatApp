@@ -34,7 +34,7 @@ const app=express();
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors(  {origin: process.env.CLIENT_URL, // Allow requests from this origin
+app.use(cors(  {origin: "https://mernchatapp-ju18.onrender.com", // Allow requests from this origin
   credentials: true}));
 
 
