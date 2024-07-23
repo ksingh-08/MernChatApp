@@ -26,6 +26,8 @@ const connectDB = async () => {
   }
 };
 const app=express();
+const path = require('path');
+
 // Serve static files from the 'build' directory
 app.use(express.static(path.join(__dirname, 'build')));
 
