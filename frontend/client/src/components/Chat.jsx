@@ -22,7 +22,7 @@ export default function Chat(){
     },[])
 
     function connectToWs(){
-        const ws = new WebSocket('ws://mernchatapp-backend-vrle.onrender.com');
+        const ws = new WebSocket('ws://mernchatapp-backend-lt9f.onrender.com');
 
         setWs(ws);
 
