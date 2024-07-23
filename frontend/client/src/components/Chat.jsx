@@ -51,9 +51,9 @@ export default function Chat(){
           
         }
         else if('text' in messageData){
-            if(messageData.sender === selectedUserId){
+            // if(messageData.sender === selectedUserId){
               setMessages(prev => ([...prev , {...messageData}]))
-        }}
+        }
     }
 
     function logout(){
