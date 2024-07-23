@@ -12,7 +12,6 @@ const ws=require('ws');
 //require('dotenv').config();
 require('dotenv').config();
 const fs=require('fs')
-//const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
@@ -26,6 +25,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+const app=express();
 // Serve static files from the 'build' directory
 app.use(express.static(path.join(__dirname, 'build')));
 
@@ -37,7 +37,7 @@ app.get('*', (req, res) => {
 connectDB();
 const jwtsecret=process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
-const app=express();
+
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json())
 app.use(cookieParser())
