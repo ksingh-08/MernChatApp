@@ -26,6 +26,13 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+// Serve static files from the 'build' directory
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Handle any requests that don’t match the static files
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 connectDB();
 const jwtsecret=process.env.JWT_SECRET;
