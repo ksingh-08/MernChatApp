@@ -22,7 +22,8 @@ export default function Chat(){
     },[])
 
     function connectToWs(){
-        const ws=new WebSocket('ws://https://mernchatapp-backend-vrle.onrender.com');
+        const ws = new WebSocket('ws://mernchatapp-backend-vrle.onrender.com');
+
         setWs(ws);
 
         ws.addEventListener('message', handleMessage)
