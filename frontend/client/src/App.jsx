@@ -4,7 +4,7 @@ import  { UserContextProvider } from './components/UserContext'
 import { BrowserRouter as Router } from 'react-router-dom';
 import Routes from './components/Routes'
 function App() {
- axios.defaults.baseURL='http://localhost:4040';
+ axios.defaults.baseURL='https://mernchatapp-backend-vrle.onrender.com';
  axios.defaults.withCredentials=true;
 
   return (
