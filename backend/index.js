@@ -12,6 +12,7 @@ const ws=require('ws');
 //require('dotenv').config();
 require('dotenv').config();
 const fs=require('fs')
+//const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
@@ -25,25 +26,15 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-const app=express();
-const path = require('path');
-
-// Serve static files from the 'build' directory
-app.use(express.static(path.join(__dirname, 'build')));
-
-// Handle any requests that don’t match the static files
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
 
 connectDB();
 const jwtsecret=process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
-
+const app=express();
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors(  {origin: "https://mernchatapp-ju18.onrender.com", // Allow requests from this origin
+app.use(cors(  {origin: process.env.CLIENT_URL, // Allow requests from this origin
   credentials: true}));
 
 
